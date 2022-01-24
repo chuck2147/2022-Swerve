@@ -57,7 +57,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public static final double MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND = MAX_VELOCITY_METERS_PER_SECOND /
           Math.hypot(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0);
 
-  public final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(
+  public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
           // Front left
           new Translation2d(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0),
           // Front right
@@ -85,10 +85,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private final NetworkTableEntry currentAngleEntry = currentPoseTable.getEntry("angle");
 
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
-    m_kinematics, 
+    kDriveKinematics, 
     new Rotation2d(0),
     //Starting Postition and Angle
     m_pose);
+
   // FIXME Uncomment if you are using a NavX
 //  private final AHRS m_navx = new AHRS(SPI.Port.kMXP, (byte) 200); // NavX connected over MXP
 
@@ -209,7 +210,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public Rotation2d getGyroscopeRotation() {
     // FIXME Remove if you are using a Pigeon
-    return Rotation2d.fromDegrees(-m_pigeon.getFusedHeading()).plus(Rotation2d.fromDegrees(45));
+    double offsetDegrees = 45;
+
+    return Rotation2d.fromDegrees(offsetDegrees - m_pigeon.getFusedHeading()) ;
 
     // FIXME Uncomment if you are using a NavX
 //    if (m_navx.isMagnetometerCalibrated()) {
@@ -220,6 +223,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
 //    // We have to invert the angle of the NavX so that rotating the robot counter-clockwise makes the angle increase.
 //    return Rotation2d.fromDegrees(360.0 - m_navx.getYaw());
   }
+
   private void updatePoseNT() {
     final var pose = getScaledPose();
     // System.out.println(pose);
@@ -231,24 +235,25 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   public void resetPose(Vector2d translation, Rotation2d angle) {
-        System.out.println("Reset Pose");
-        zeroGyroscope();
-        m_odometry.resetPosition(
-          new Pose2d(
-            //coordinates switched x is forward, y is left and right.
-            // Converting to unit system of path following which uses x for right and left
-            new Translation2d(translation.y / SCALE_Y, -translation.x / SCALE_X),
-            new Rotation2d(angle.getRadians())
-          ),
-          getGyroscopeRotation()
-        );
-        m_pose = m_odometry.getPoseMeters();
-        updatePoseNT();
-      }
+    System.out.println("Reset Pose");
+    zeroGyroscope();
+    m_odometry.resetPosition(
+      new Pose2d(
+        //coordinates switched x is forward, y is left and right.
+        // Converting to unit system of path following which uses x for right and left
+        new Translation2d(translation.y / SCALE_Y, -translation.x / SCALE_X),
+        new Rotation2d(angle.getRadians())
+      ),
+      getGyroscopeRotation()
+    );
+    m_pose = m_odometry.getPoseMeters();
+    updatePoseNT();
+  }
 
   public void drive(ChassisSpeeds chassisSpeeds) {
     m_chassisSpeeds = chassisSpeeds;
   }
+
   public void setModuleStates(SwerveModuleState[] states) {
     SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_VELOCITY_METERS_PER_SECOND);
 
@@ -258,9 +263,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
     m_backRightModule.set(states[3].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[3].angle.getRadians());
     m_pose = m_odometry.update(getGyroscopeRotation(), states[0], states[1], states[2], states[3]);
   }
+
   @Override
   public void periodic() {
-    SwerveModuleState[] states = m_kinematics.toSwerveModuleStates(m_chassisSpeeds);
+    SwerveModuleState[] states = kDriveKinematics.toSwerveModuleStates(m_chassisSpeeds);
     setModuleStates(states);
     updatePoseNT();
     //System.out.println(getGyroscopeRotation());
