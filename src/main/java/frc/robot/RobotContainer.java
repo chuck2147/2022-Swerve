@@ -140,7 +140,7 @@ public class RobotContainer {
     //         m_drivetrainSubsystem);
 
     // PathPlanner path - using PathPlannerLib 
-    PathPlannerTrajectory ppTrajectory = PathPlanner.loadPath("Start Path.json", 8, 5);
+    PathPlannerTrajectory ppTrajectory = PathPlanner.loadPath("Forward Path", 1, 1);
 
     PPSwerveControllerCommand ppSwerveControllerCommand =
       new PPSwerveControllerCommand(

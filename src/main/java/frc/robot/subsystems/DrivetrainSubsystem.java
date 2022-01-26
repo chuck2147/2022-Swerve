@@ -98,6 +98,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private final SwerveModule m_frontRightModule;
   private final SwerveModule m_backLeftModule;
   private final SwerveModule m_backRightModule;
+  private final double offsetDegrees = 90;
 
   private ChassisSpeeds m_chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
   public void resetOdometry(Pose2d pose) {
@@ -107,6 +108,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public DrivetrainSubsystem() {
     ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
 
+    resetPose(new Vector2d(0,0), new Rotation2d(offsetDegrees));
     // There are 4 methods you can call to create your swerve modules.
     // The method you use depends on what motors you are using.
     //
@@ -210,9 +212,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public Rotation2d getGyroscopeRotation() {
     // FIXME Remove if you are using a Pigeon
-    double offsetDegrees = 45;
 
-    return Rotation2d.fromDegrees(offsetDegrees - m_pigeon.getFusedHeading()) ;
+    return Rotation2d.fromDegrees(-m_pigeon.getFusedHeading()) ;
 
     // FIXME Uncomment if you are using a NavX
 //    if (m_navx.isMagnetometerCalibrated()) {
@@ -271,5 +272,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
     updatePoseNT();
     //System.out.println(getGyroscopeRotation());
     m_chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
+    System.out.println(getPose().getX() +  ", " + getPose().getY());
   }
 }
