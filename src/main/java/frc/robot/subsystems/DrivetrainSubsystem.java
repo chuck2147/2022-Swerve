@@ -98,17 +98,19 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private final SwerveModule m_frontRightModule;
   private final SwerveModule m_backLeftModule;
   private final SwerveModule m_backRightModule;
-  private final double offsetDegrees = 90;
+  private final double offsetDegrees = 15;
 
   private ChassisSpeeds m_chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
-  public void resetOdometry(Pose2d pose) {
+  public void resetOdometry(Pose2d pose) {    
     m_odometry.resetPosition(pose, getGyroscopeRotation());
+    m_pose = m_odometry.getPoseMeters();
   }
 
   public DrivetrainSubsystem() {
     ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
-
-    resetPose(new Vector2d(0,0), new Rotation2d(offsetDegrees));
+    resetPose(new Vector2d(0,0), new Rotation2d(0));
+    //resetGyroscope(offsetDegrees);
+   //resetOdometry(m_pose);
     // There are 4 methods you can call to create your swerve modules.
     // The method you use depends on what motors you are using.
     //
@@ -195,7 +197,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
      final var translation = times();
      final var rotation = m_pose.getRotation().rotateBy(new Rotation2d(Math.PI / 2));
     
-     return new Pose2d(-translation.getY(), translation.getX(), rotation);
+     return new Pose2d(translation.getX(), translation.getY(), rotation);
   }
 
   /**
@@ -205,6 +207,14 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public void zeroGyroscope() {
     // FIXME Remove if you are using a Pigeon
     m_pigeon.setFusedHeading(0.0);
+
+    // FIXME Uncomment if you are using a NavX
+//    m_navx.zeroYaw();
+  }
+
+  public void resetGyroscope(double angle) {
+    // FIXME Remove if you are using a Pigeon
+    m_pigeon.setFusedHeading(angle);
 
     // FIXME Uncomment if you are using a NavX
 //    m_navx.zeroYaw();
@@ -242,7 +252,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
       new Pose2d(
         //coordinates switched x is forward, y is left and right.
         // Converting to unit system of path following which uses x for right and left
-        new Translation2d(translation.y / SCALE_Y, -translation.x / SCALE_X),
+        new Translation2d(translation.x / SCALE_X, translation.y / SCALE_Y),
         new Rotation2d(angle.getRadians())
       ),
       getGyroscopeRotation()
@@ -262,6 +272,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     m_frontRightModule.set(states[1].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[1].angle.getRadians());
     m_backLeftModule.set(states[2].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[2].angle.getRadians());
     m_backRightModule.set(states[3].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[3].angle.getRadians());
+    
     m_pose = m_odometry.update(getGyroscopeRotation(), states[0], states[1], states[2], states[3]);
   }
 
@@ -272,6 +283,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
     updatePoseNT();
     //System.out.println(getGyroscopeRotation());
     m_chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
-    System.out.println(getPose().getX() +  ", " + getPose().getY());
+    System.out.println(getPose().getX() +  ", " + getPose().getY() + ", " + getPose().getRotation().getDegrees());
   }
 }

@@ -140,7 +140,7 @@ public class RobotContainer {
     //         m_drivetrainSubsystem);
 
     // PathPlanner path - using PathPlannerLib 
-    PathPlannerTrajectory ppTrajectory = PathPlanner.loadPath("Forward Path", 1, 1);
+    PathPlannerTrajectory ppTrajectory = PathPlanner.loadPath("Forward Path", 0.5, 0.5);
 
     PPSwerveControllerCommand ppSwerveControllerCommand =
       new PPSwerveControllerCommand(
@@ -159,6 +159,7 @@ public class RobotContainer {
     m_drivetrainSubsystem.resetOdometry(ppTrajectory.getInitialPose());
 
     // Run path following command, then stop at the end.
+
     return ppSwerveControllerCommand.andThen(() -> m_drivetrainSubsystem.drive(new ChassisSpeeds(0, 0, 0)));
   }
   
