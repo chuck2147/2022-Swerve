@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.drive.Vector2d;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -19,18 +20,9 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.math.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.commands.DefaultDriveCommand;
@@ -78,7 +70,9 @@ public class RobotContainer {
     // Back button zeros the gyroscope
     new Button(m_controller::getBackButton)
             // No requirements because we don't need to interrupt anything
-            .whenPressed(m_drivetrainSubsystem::zeroGyroscope);
+            .whenPressed(()->m_drivetrainSubsystem.resetGyroscope());
+    new Button(m_controller::getStartButton)
+    .whenPressed(()->m_drivetrainSubsystem.resetPose(new Vector2d(0, 0), new Rotation2d(0)));
   }
 
   /**
@@ -145,7 +139,7 @@ public class RobotContainer {
     PPSwerveControllerCommand ppSwerveControllerCommand =
       new PPSwerveControllerCommand(
         ppTrajectory, 
-        m_drivetrainSubsystem::getPose, // Functional interface to feed supplier
+        m_drivetrainSubsystem::getScaledPose, // Functional interface to feed supplier
         DrivetrainSubsystem.kDriveKinematics,
 
         // Position controllers
@@ -156,7 +150,14 @@ public class RobotContainer {
         m_drivetrainSubsystem);
 
     // Reset odometry to the starting pose of the trajectory.
-    m_drivetrainSubsystem.resetOdometry(ppTrajectory.getInitialPose());
+    System.out.println(ppTrajectory.getInitialPose().getRotation().getRadians());
+    m_drivetrainSubsystem.resetPose(
+      new Vector2d(
+        ppTrajectory.getInitialPose().getTranslation().getX(), 
+        ppTrajectory.getInitialPose().getTranslation().getY()
+      ),
+      ppTrajectory.getInitialPose().getRotation().plus(Rotation2d.fromDegrees(0))
+    );
 
     // Run path following command, then stop at the end.
 

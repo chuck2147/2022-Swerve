@@ -74,8 +74,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
   // FIXME Remove if you are using a Pigeon
   private final PigeonIMU m_pigeon = new PigeonIMU(DRIVETRAIN_PIGEON_ID);
   private Pose2d m_pose = new Pose2d(0, 0, new Rotation2d());
-  private final double SCALE_X = 100 / 2.54 * 1; // inches <-> meters and compensating for error
-  private final double SCALE_Y = 100 / 2.54 * 1;
+  private final double SCALE_X = -1/0.9;
+  private final double SCALE_Y = -1/0.9;
   double length = 19;
   double width = 20;
   private final NetworkTableInstance nt = NetworkTableInstance.getDefault();
@@ -101,13 +101,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private final double offsetDegrees = 15;
 
   private ChassisSpeeds m_chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
-  public void resetOdometry(Pose2d pose) {    
-    m_odometry.resetPosition(pose, getGyroscopeRotation());
-    m_pose = m_odometry.getPoseMeters();
-  }
 
   public DrivetrainSubsystem() {
     ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
+    resetGyroscope();
     resetPose(new Vector2d(0,0), new Rotation2d(0));
     //resetGyroscope(offsetDegrees);
    //resetOdometry(m_pose);
@@ -182,11 +179,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
             BACK_RIGHT_MODULE_STEER_OFFSET
     );
   }
-  
-  public Translation2d times() {
-    final var m_translation = m_pose.getTranslation();
-    return new Translation2d(m_translation.getX() * SCALE_X, m_translation.getY() * SCALE_Y);
-  }
 
   public Pose2d getPose() {
         return m_pose;
@@ -194,8 +186,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public Pose2d getScaledPose() {
      m_pose = getPose();
-     final var translation = times();
-     final var rotation = m_pose.getRotation().rotateBy(new Rotation2d(Math.PI / 2));
+     final var translation = new Translation2d(m_pose.getX() * SCALE_X, m_pose.getY() * SCALE_Y);
+     final var rotation = m_pose.getRotation().rotateBy(new Rotation2d(0));
     
      return new Pose2d(translation.getX(), translation.getY(), rotation);
   }
@@ -204,40 +196,21 @@ public class DrivetrainSubsystem extends SubsystemBase {
    * Sets the gyroscope angle to zero. This can be used to set the direction the robot is currently facing to the
    * 'forwards' direction.
    */
-  public void zeroGyroscope() {
-    // FIXME Remove if you are using a Pigeon
+  public void resetGyroscope() {
     m_pigeon.setFusedHeading(0.0);
-
-    // FIXME Uncomment if you are using a NavX
-//    m_navx.zeroYaw();
   }
 
   public void resetGyroscope(double angle) {
-    // FIXME Remove if you are using a Pigeon
     m_pigeon.setFusedHeading(angle);
-
-    // FIXME Uncomment if you are using a NavX
-//    m_navx.zeroYaw();
+    // Use Degrees
   }
 
   public Rotation2d getGyroscopeRotation() {
-    // FIXME Remove if you are using a Pigeon
-
-    return Rotation2d.fromDegrees(-m_pigeon.getFusedHeading()) ;
-
-    // FIXME Uncomment if you are using a NavX
-//    if (m_navx.isMagnetometerCalibrated()) {
-//      // We will only get valid fused headings if the magnetometer is calibrated
-//      return Rotation2d.fromDegrees(m_navx.getFusedHeading());
-//    }
-//
-//    // We have to invert the angle of the NavX so that rotating the robot counter-clockwise makes the angle increase.
-//    return Rotation2d.fromDegrees(360.0 - m_navx.getYaw());
+    return Rotation2d.fromDegrees(-m_pigeon.getFusedHeading());
   }
 
   private void updatePoseNT() {
     final var pose = getScaledPose();
-    // System.out.println(pose);
 
     currentAngleEntry.setDouble(pose.getRotation().getRadians());
     currentXEntry.setDouble(pose.getX());
@@ -247,13 +220,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public void resetPose(Vector2d translation, Rotation2d angle) {
     System.out.println("Reset Pose");
-    zeroGyroscope();
     m_odometry.resetPosition(
       new Pose2d(
         //coordinates switched x is forward, y is left and right.
         // Converting to unit system of path following which uses x for right and left
         new Translation2d(translation.x / SCALE_X, translation.y / SCALE_Y),
-        new Rotation2d(angle.getRadians())
+        angle
       ),
       getGyroscopeRotation()
     );
@@ -281,8 +253,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
     SwerveModuleState[] states = kDriveKinematics.toSwerveModuleStates(m_chassisSpeeds);
     setModuleStates(states);
     updatePoseNT();
-    //System.out.println(getGyroscopeRotation());
     m_chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
-    System.out.println(getPose().getX() +  ", " + getPose().getY() + ", " + getPose().getRotation().getDegrees());
   }
 }
