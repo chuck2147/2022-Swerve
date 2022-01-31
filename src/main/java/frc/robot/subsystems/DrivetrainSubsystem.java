@@ -104,8 +104,18 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public DrivetrainSubsystem() {
     ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
-    resetGyroscope();
-    resetPose(new Vector2d(0,0), new Rotation2d(0));
+    // Run resetPost on another Thread and delay for 1 second so Gyroscope is done calibrating on startup.
+    new Thread(() -> {
+      try {
+        Thread.sleep(1000);
+        resetGyroscope();
+        resetPose(new Vector2d(0,0), new Rotation2d(0));
+      }
+      catch (Exception ex) {
+        System.out.println(ex.toString());
+      }
+    }).start();
+    
     //resetGyroscope(offsetDegrees);
    //resetOdometry(m_pose);
     // There are 4 methods you can call to create your swerve modules.
