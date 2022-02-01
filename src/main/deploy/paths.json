@@ -1,0 +1,100 @@
+{
+  "Drive forward": {
+    "waypoints": [
+      {
+        "x": 285.2383894470435,
+        "y": 407.53056978052024,
+        "heading": -94.7278674530112,
+        "handleBeforeLength": 20,
+        "handleAfterLength": 14.194223834753409
+      },
+      {
+        "handleAfterLength": 26.402590850012277,
+        "handleBeforeLength": 19.49023249219721,
+        "heading": 169.51054564684307,
+        "x": 296.84480226857494,
+        "y": 506.2201209469229
+      },
+      {
+        "x": 174.04991385983527,
+        "y": 506.92977804100553,
+        "heading": 178.26463742592514,
+        "handleBeforeLength": 23.434050207608255,
+        "handleAfterLength": 26.27207690483588
+      }
+    ],
+    "angles": [
+      {
+        "afterWaypoint": 0,
+        "t": 0,
+        "angle": 1.5707963267948966
+      },
+      {
+        "afterWaypoint": 1,
+        "t": 0.9980000000000008,
+        "angle": 3.1093683691080547
+      }
+    ]
+  },
+  "Trench to Triangle": {
+    "waypoints": [
+      {
+        "x": 40.53844264308525,
+        "y": 222.91418910520204,
+        "heading": 0,
+        "handleBeforeLength": 20,
+        "handleAfterLength": 20
+      },
+      {
+        "x": 94.2202571030869,
+        "y": 18.55203992225757,
+        "heading": 0,
+        "handleBeforeLength": 20,
+        "handleAfterLength": 20
+      }
+    ],
+    "angles": [
+      {
+        "afterWaypoint": 0,
+        "t": 0.1,
+        "angle": 1.5707963267948966
+      },
+      {
+        "afterWaypoint": 0,
+        "t": 0.9,
+        "angle": 1.5707963267948966
+      }
+    ],
+    "maxVelocity": 3
+  },
+  "New Path": {
+    "waypoints": [
+      {
+        "x": 157.7245818748583,
+        "y": 0.23461286602676695,
+        "heading": 0,
+        "handleBeforeLength": 20,
+        "handleAfterLength": 20
+      },
+      {
+        "x": 161.27356708898373,
+        "y": 609.830056682983,
+        "heading": 0,
+        "handleBeforeLength": 20,
+        "handleAfterLength": 20
+      }
+    ],
+    "angles": [
+      {
+        "afterWaypoint": 0,
+        "t": 0.1,
+        "angle": 1.5707963267948966
+      },
+      {
+        "afterWaypoint": 0,
+        "t": 0.9980000000000008,
+        "angle": 1.5707963267948966
+      }
+    ]
+  }
+}
